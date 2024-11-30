@@ -7,11 +7,9 @@ This project is to provide users with the ability to access, store and analyse d
 
 The primary objective of this project was to develop a Streamlit application that enables users to:
 
-> •	Access from multiple YouTube channels.
-> 
-> •	Store the data in a MySQL database for structured querying.
->
-> •	Analyze data by performing searches and execute queries on the stored data with predefined queries.
++	Access from multiple YouTube channels.
++	Store the data in a MySQL database for structured querying.
++	Analyze data by performing searches and execute queries on the stored data with predefined queries.
 
 The project’s goal was to create a tool that could provide meaningful insights from YouTube data, such as identifying the top-performing videos, understanding viewer engagement, and analyzing content trends.
 
@@ -30,7 +28,7 @@ The project’s goal was to create a tool that could provide meaningful insights
 
 2.	**Streamlit:** Streamlit is an open-source Python framework designed to create and share web applications. It is specifically built for Python, making it easy for data scientists and machine learning engineers to deploy their models and visualize data without needing extensive knowledge of web development
 	
-A web-based user interface is developed using Streamlit where users can enter a YouTube channel ID to fetch and store channel details and to view results based on predefined queries.
+         A web-based user interface is developed using Streamlit where users can enter a YouTube channel ID to fetch and store channel details and to view results based on predefined queries.
 
 3.	**YouTube API  key:** To search or integrate YouTube with external applications, one needs an authentication key called a YouTube API key.  This API ensures error-free, reliable data exchanges and let use YouTube outside of the Google app
 	
@@ -56,19 +54,16 @@ To run the YouTube Data Harvesting and Warehousing project, follow these steps:
 2.	Create your YouTube API.
 3.	Install and have login credentials for MySQL for storing the data.
 4.	Download the Application Script Jag_You_Tube_proj.py from Git hub. 
-5.	Launch the Application through Streamlit in the command-line interface.
+5.	Launch the Application through Streamlit in the command-line interface.  
      **Streamlit run \<path>\Jag_You_Tube_proj.py**
 
 ### Features
 
 The YouTube Data Harvesting and Warehousing application offers the following features:
-> •	Retrieval of channel, video and comments (first 100) data from YouTube using the YouTube API for the given channel id.
->
-> •	Storage of data to a MySQL database for efficient querying and analysis.
->
-> •	Search and retrieval of data from the SQL database using SQL queries for a ten different pre-defined search options.
->
-> •	Data analysis and visualization through charts and graphs using Streamlit's data visualization capabilities.
++	Retrieval of channel, video and comments (first 100) data from YouTube using the YouTube API for the given channel id.
++	Storage of data to a MySQL database for efficient querying and analysis.
++	Search and retrieval of data from the SQL database using SQL queries for a ten different pre-defined search options.
++	Data analysis and visualization through charts and graphs using Streamlit's data visualization capabilities.
 
 ### Conclusion
 
@@ -76,17 +71,13 @@ This project was a deep dive into the world of data harvesting and warehousing u
 
 ### References
 
-> •	Streamlit Documentation: [https://docs.streamlit.io/](https://docs.streamlit.io/)
-> 
-> •	YouTube API Documentation: [https://developers.google.com/youtube](https://developers.google.com/youtube)
-> 
+> •	Streamlit Documentation: [https://docs.streamlit.io/](https://docs.streamlit.io/)  
+> •	YouTube API Documentation: [https://developers.google.com/youtube](https://developers.google.com/youtube)  
 > •	Python Documentation: [https://docs.python.org/](https://docs.python.org/)
 
 #### My Contact
-📧 Email: jagdeeshv@hotmail.com
-
+📧 Email: jagdeeshv@hotmail.com  
 🌐 LinkedIn: https://www.linkedin.com/in/jagadeesh-v-a09a681b7
 
 For any further questions or inquiries, feel free to reach out. I am happy to assist you with any queries.
 
-# You-Tube-Data-Harvesting-and-Warehousing
