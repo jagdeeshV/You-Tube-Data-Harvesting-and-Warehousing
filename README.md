@@ -77,7 +77,7 @@ This project was a deep dive into the world of data harvesting and warehousing u
 
 #### My Contact
 📧 Email: jagdeeshv@hotmail.com  
-🌐 LinkedIn: https://www.linkedin.com/in/jagadeesh-v-a09a681b7
+🌐 LinkedIn: https://www.linkedin.com/in/jagadeesh-v-a09a681b7 (Demo video will be uploaded shortly)
 
 For any further questions or inquiries, feel free to reach out. I am happy to assist you with any queries.
 
