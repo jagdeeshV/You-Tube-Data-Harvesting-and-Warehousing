@@ -28,7 +28,7 @@ The project’s goal was to create a tool that could provide meaningful insights
 
 2.	**Streamlit:** Streamlit is an open-source Python framework designed to create and share web applications. It is specifically built for Python, making it easy for data scientists and machine learning engineers to deploy their models and visualize data without needing extensive knowledge of web development
 	
-         A web-based user interface is developed using Streamlit where users can enter a YouTube channel ID to fetch and store channel details and to view results based on predefined queries.
+        A web-based user interface is developed using Streamlit where users can enter a YouTube channel ID to fetch and store channel details and to view results based on predefined queries.
 
 3.	**YouTube API  key:** To search or integrate YouTube with external applications, one needs an authentication key called a YouTube API key.  This API ensures error-free, reliable data exchanges and let use YouTube outside of the Google app
 	
@@ -51,8 +51,8 @@ The project’s goal was to create a tool that could provide meaningful insights
 To run the YouTube Data Harvesting and Warehousing project, follow these steps:
 
 1.	Install Python and required packages / libraries as given above
-2.	Create your YouTube API.
-3.	Install and have login credentials for MySQL for storing the data.
+2.	Create your YouTube API and have it handy.
+3.	Install MySQL and have its login credentials for storing the data.
 4.	Download the Application Script Jag_You_Tube_proj.py from Git hub. 
 5.	Launch the Application through Streamlit in the command-line interface.  
      **Streamlit run \<path>\Jag_You_Tube_proj.py**
@@ -61,7 +61,7 @@ To run the YouTube Data Harvesting and Warehousing project, follow these steps:
 
 The YouTube Data Harvesting and Warehousing application offers the following features:
 +	Retrieval of channel, video and comments (first 100) data from YouTube using the YouTube API for the given channel id.
-+	Storage of data to a MySQL database for efficient querying and analysis.
++	Storage of data confirmed by user to a MySQL database for efficient querying and analysis.
 +	Search and retrieval of data from the SQL database using SQL queries for a ten different pre-defined search options.
 +	Data analysis and visualization through charts and graphs using Streamlit's data visualization capabilities.
 
