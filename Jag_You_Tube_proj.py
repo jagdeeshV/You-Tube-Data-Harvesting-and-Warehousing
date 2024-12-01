@@ -1,5 +1,5 @@
 # You Tube Data Harvesting and Warehousing developed by Jagadeesh V
-#  Nov. 2024
+#  Created by Jagadeesh V during last week of Nov. 2024
 from googleapiclient.discovery import build
 import mysql.connector
 import streamlit as st
@@ -20,7 +20,7 @@ def extract_channel_data(channel_id, frm):
         return {
             'channel_name': channel_snippet['title'],
             'channel_ID': channel_id,
-             'channel_type':  channel_resp['items'][0]['kind'],
+            'channel_type':  channel_resp['items'][0]['kind'],
             'Subscription_count': channel_statistics.get('subscriberCount', 0),
             'channel_views': channel_statistics.get('viewCount', 0),
             'channel_description': channel_snippet.get('description', ''),
@@ -32,6 +32,7 @@ def extract_channel_data(channel_id, frm):
         return {
             'channel_name': 'ERR',
             'channel_ID': channel_id,
+            'channel_Desc':  "",
              'channel_type':  "",
             'Subscription_count': 0,
             'channel_views': 0,
@@ -125,7 +126,7 @@ def convert_to_minutes(time_string):
             seconds = int(sec_match.group('seconds'))
             return seconds / 60
         else:
-          raise ValueError('Invalid time string: {}'.format(time_string))
+           raise ValueError('Invalid time string: {}'.format(time_string))
     except Exception as e:
         return 0
 
@@ -204,15 +205,45 @@ mycursor = mydb.cursor(buffered = True)
 # 2B. Creating the DB & required Tables
 mycursor.execute('create database if not exists YouTube_DB')   #--> To Run very first time only to create the DB
 mycursor.execute('use YouTube_DB')
-mycursor.execute('create table if not exists channels (channel_ID VARCHAR(255), channel_Name VARCHAR(255), channel_Type VARCHAR(255), channel_Views INT(15), channel_Description TEXT, channel_Status VARCHAR(255), Subscribers INT(50))')
-mycursor.execute('create table if not exists videos (Video_ID VARCHAR(255), Video_Name VARCHAR(100), Video_Description TEXT, Published_Date DATETIME, View_count INT(20), Like_count INT(20), Dislike_count INT(20), Favorite_count INT(20), Comment_count INT(50), Duration VARCHAR(20), Thumbnail VARCHAR(255), Caption_Status VARCHAR(255), Channel_ID VARCHAR(100) )')
-mycursor.execute('create table if not exists comments ( Comment_ID VARCHAR(255), Video_ID VARCHAR(255), Comment_Text TEXT,  Comment_Author VARCHAR(255), Comment_Published_Date DATETIME, channel_ID VARCHAR(255))')
+mycursor.execute(
+                 'create table if not exists channels ( \
+                      channel_ID VARCHAR(255), \
+                      channel_Name VARCHAR(255),\
+                      channel_Type VARCHAR(255), \
+                      channel_Views INT(15), \
+                      channel_Description TEXT, \
+                      channel_Status VARCHAR(255), \
+                      Subscribers INT(50) \
+                 )'
+)
+mycursor.execute(
+                 'create table if not exists videos ( \
+                     Video_ID VARCHAR(255),    Video_Name VARCHAR(100), \
+                     Video_Description TEXT,     Published_Date DATETIME, \
+                     View_count INT(20),             Like_count INT(20), \
+                     Dislike_count INT(20),          Favorite_count INT(20), \
+                     Comment_count INT(50),    Duration VARCHAR(20), \
+                     Thumbnail VARCHAR(255), Caption_Status VARCHAR(255), \
+                     Channel_ID VARCHAR(100) \
+                 )'
+)
+mycursor.execute(
+                 'create table if not exists comments ( \
+                     Comment_ID VARCHAR(255),                Video_ID VARCHAR(255),\
+                     Comment_Text TEXT,                               Comment_Author VARCHAR(255),\
+                     Comment_Published_Date DATETIME, channel_ID VARCHAR(255) \
+                 )'
+)
 
 # 2C. Insert the channel data, video data and comment data into SQL
 def insert_data(channel_data, video_df):
     # 2C1. Insert channel data
-    mycursor.execute("INSERT INTO channels (channel_name, channel_ID, Subscribers, channel_views, channel_description) VALUES (%s, %s, %s, %s, %s)",
-                   (channel_data['channel_name'], channel_data['channel_ID'], channel_data['Subscription_count'], channel_data['channel_views'], channel_data['channel_description']))
+    mycursor.execute(
+            "INSERT INTO channels ( \
+                    channel_name, channel_ID, Subscribers, channel_views, channel_description) VALUES (%s, %s, %s, %s, %s)", \
+                   (channel_data['channel_name'], channel_data['channel_ID'], channel_data['Subscription_count'], channel_data['channel_views'], channel_data['channel_description']
+              )
+    )
     mydb.commit()
 
     # 2C2. Insert video data & Comments Data
@@ -223,8 +254,14 @@ def insert_data(channel_data, video_df):
 #            print(row['Playlist_ID'])
 #        print(f"You Tube date : {row['Published_at']}")
 #        print(ms_dt)
-            mycursor.execute("INSERT INTO videos (channel_ID, Video_ID, Video_Name, Video_Description, Published_Date, view_count, like_count, Dislike_count, Favorite_count, Comment_count, Duration, Thumbnail, Caption_Status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                         (channel_data['channel_ID'], row['Playlist_ID'], row['Video_name'], row['Video_description'], mss_dt, row['View_count'], row['Like_count'], row['Dislike_count'], row['Favorite_count'], row['Comment_count'], row['Duration'], row['Thumbnail'], row['Caption_status']))
+            mycursor.execute(
+                    "INSERT INTO videos ( \
+                            channel_ID, Video_ID, Video_Name, Video_Description, Published_Date, view_count, like_count, \
+                            Dislike_count, Favorite_count, Comment_count, Duration, Thumbnail, Caption_Status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", \
+                          (channel_data['channel_ID'], row['Playlist_ID'], row['Video_name'], row['Video_description'], mss_dt, row['View_count'], row['Like_count'], \
+                           row['Dislike_count'], row['Favorite_count'], row['Comment_count'], row['Duration'], row['Thumbnail'], row['Caption_status']
+                    )
+            )
         except Exception as e:
             print("")
         mydb.commit()
@@ -232,28 +269,45 @@ def insert_data(channel_data, video_df):
         try:
             for comment in row['Comments']:
               mss_dt = datetime.strptime(comment['Published_at'], "%Y-%m-%dT%H:%M:%SZ")
-              mycursor.execute("INSERT INTO comments (Comment_ID, Video_ID, Comment_text, Comment_Author, Comment_Published_Date, channel_ID) VALUES (%s, %s, %s, %s, %s, %s)",
-                              (comment['Comment_ID'], row['Playlist_ID'], comment['Comment_text'], comment['Author_name'], mss_dt, channel_data['channel_ID']))
+              mycursor.execute( 
+                      "INSERT INTO comments ( \
+                              Comment_ID, Video_ID, Comment_text, Comment_Author, Comment_Published_Date, channel_ID) VALUES (%s, %s, %s, %s, %s, %s)", \
+                            (comment['Comment_ID'], row['Playlist_ID'], comment['Comment_text'], comment['Author_name'], mss_dt, channel_data['channel_ID']
+                       )
+               )
         except Exception as e:
             print("")
         mydb.commit()
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------- #
+# Displaying the retrieved channel detail and to accept concurrence & store the data 
+@st.dialog('Channel Details')
+def show_dialog(channel_data, video_df, comment_df):
+    st.write(f"**ID**                           : {channel_id}")
+    st.write(f"**Name**                    : {channel_data['channel_name']}")
+    st.write(f"**Description**          : {channel_data['channel_description']}")
+    st.write(f"**No. of Views**        : {channel_data['channel_views']}")
+    st.write(f"**No. of Subscribers** : {channel_data['Subscription_count']}")
+    if st.button("Store Data"):
+        insert_data(channel_data, video_df)
+        st.success("Fetching & Storing data Completed")
+    st.write('**Note:** To exit and proceed press X button in this popup or press any key outside this box')
 
+# Extract & Save caller first Function called by Main streamlit 
 def extract_insert_data_st():
-    if st.button("Fetch & Store Data"):
-            qry = "SELECT COUNT(Channel_ID) AS channel_count FROM channels where Channel_ID = '"+ channel_id +"'"
+    if st.button("Fetch Data"):
+        qry = "SELECT COUNT(Channel_ID) AS channel_count FROM channels where Channel_ID = '"+ channel_id +"'"
 #            print(qry)
-            mycursor.execute( qry)
-            channel_count = mycursor.fetchone()[0]
-            if channel_count == 0:
-                channel_data = extract_channel_data(channel_id, 'Main')
-                if channel_data['channel_name']  !=  'ERR':
-                    channel_data, video_df, comment_df = extract_data(channel_id)
-                    insert_data(channel_data, video_df)
-                    st.success("Fetching & Storing data Completed")
-                else:
-                    st.info('Invalid Channel '+channel_id+ ' Rereival failed')
+        mycursor.execute( qry)
+        channel_count = mycursor.fetchone()[0]
+        if channel_count == 0:
+            channel_data = extract_channel_data(channel_id, 'Main')
+            if channel_data['channel_name']  !=  'ERR':
+                channel_data, video_df, comment_df = extract_data(channel_id)
+                show_dialog(channel_data, video_df, comment_df)
             else:
-                st.info('Channel '+channel_id+ ' already retreived and stored')
+                st.info('Invalid Channel '+channel_id+ ' Rereival failed')
+        else:
+            st.info('Channel '+channel_id+ ' already retreived and stored')
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
 # Main Streamlit routine to accept Channel ID, extract & Store Data and 10 queries
@@ -273,7 +327,6 @@ df = pd.DataFrame(data=txt)
 st.table(df.style.background_gradient(cmap='Blues'))
 
 # YouTube Data API access
-#api_key = "AIzaSyCs0Yldqtu99WmMF-biPQUE6dhFflDIgGo"
 text_input_container = st.empty()
 api_key = text_input_container.text_input("Enter Your API Key:", help = 'To get a Key go through <https://developers.google.com/youtube/v3/getting-started>')
 
@@ -307,24 +360,32 @@ if st.button("Execute"):
     if selected_query == query_options[0]:
         query_result = pd.read_sql_query("select Video_Name, Channel_Name from channels a, videos b where a.channel_id = b.channel_id order by Video_Name", mydb)
     elif selected_query == query_options[1]:
-        #query_result = pd.read_sql_query("SELECT channel_Name, COUNT(Playlist_ID) AS Num_Videos FROM channels INNER JOIN videos ON channels.channel_ID = videos.channel_ID GROUP BY channel_Name ORDER BY Num_Videos DESC LIMIT 1", mydb)
-        query_result = pd.read_sql_query("select channel_Name, count(video_id) as No_of_Videos from channels a, videos b where a.channel_id = b.channel_id group by channel_Name order by count(video_id) desc limit 1", mydb)
+        query_result = pd.read_sql_query("select channel_Name, count(video_id) as No_of_Videos from channels a, videos b \
+                                                                             where a.channel_id = b.channel_id group by channel_Name order by count(video_id) desc limit 1", mydb)
     elif selected_query == query_options[2]:
-        query_result =pd.read_sql_query("select  Video_Name, View_count as Views, Channel_Name from channels a, videos b where a.channel_id = b.channel_id order by view_count desc limit 10;", mydb)
+        query_result =pd.read_sql_query("select  Video_Name, View_count as Views, Channel_Name from channels a, videos b \
+                                                                             where a.channel_id = b.channel_id order by view_count desc limit 10;", mydb)
     elif selected_query == query_options[3]:
-        query_result = pd.read_sql_query("Select Video_Name, COUNT(Comment_ID) as No_of_Comments from videos b, comments c where b.Video_ID = c.Video_ID group by Video_Name order by Video_name;", mydb)
+        query_result = pd.read_sql_query("Select Video_Name, COUNT(Comment_ID) as No_of_Comments from videos b, comments c \
+                                                                             where b.Video_ID = c.Video_ID group by Video_Name order by Video_name;", mydb)
     elif selected_query == query_options[4]:
-        query_result = pd.read_sql_query("Select Video_Name, channel_Name, like_count as No_of_Likes from channels a, videos b where b.channel_ID = a.channel_ID order by like_count Desc Limit 1;", mydb)
+        query_result = pd.read_sql_query("Select Video_Name, channel_Name, like_count as No_of_Likes from channels a, videos b \
+                                                                             where b.channel_ID = a.channel_ID order by like_count Desc Limit 1;", mydb)
     elif selected_query == query_options[5]:
-        query_result = pd.read_sql_query("Select Video_Name, Sum(like_count) as Total_Likes, Sum(Dislike_count) as Total_Dislikes from  videos group by Video_Name order by video_name;", mydb)
+        query_result = pd.read_sql_query("Select Video_Name, Sum(like_count) as Total_Likes, Sum(Dislike_count) as Total_Dislikes from  videos \
+                                                                             group by Video_Name order by video_name;", mydb)
     elif selected_query == query_options[6]:
-        query_result = pd.read_sql_query("Select channel_Name, Sum(View_Count) as Total_Views From channels a, videos b where a.channel_ID = b.channel_ID group by channel_Name order by channel_Name;", mydb)
+        query_result = pd.read_sql_query("Select channel_Name, Sum(View_Count) as Total_Views From channels a, videos b \
+                                                                             where a.channel_ID = b.channel_ID group by channel_Name order by channel_Name;", mydb)
     elif selected_query == query_options[7]:
-        query_result = pd.read_sql_query("Select channel_Name, count(b.channel_ID) as No_of_Videos From channels a, Videos b Where a.channel_ID = b.channel_ID and Year(b.Published_Date) = '2022' Group by channel_Name;", mydb)
+        query_result = pd.read_sql_query("Select channel_Name, count(b.channel_ID) as No_of_Videos From channels a, Videos b \
+                                                                             Where a.channel_ID = b.channel_ID and Year(b.Published_Date) = '2022' Group by channel_Name;", mydb)
     elif selected_query == query_options[8]:
-        query_result = pd.read_sql_query("Select channel_Name, Round(Avg(Duration), 2) as Average_Duration From channels a, Videos b where b.channel_ID = a.channel_ID Group by channel_Name;", mydb)
+        query_result = pd.read_sql_query("Select channel_Name, Round(Avg(Duration), 2) as Average_Duration From channels a, Videos b \
+                                                                                where b.channel_ID = a.channel_ID Group by channel_Name;", mydb)
     elif selected_query == query_options[9]:
-        query_result = pd.read_sql_query("Select b.Video_Name, a.channel_Name, b.comment_count as No_of_comments from Channels a, videos b where a.channel_ID = b.Channel_ID order by Comment_count Desc Limit 1;", mydb)
+        query_result = pd.read_sql_query("Select b.Video_Name, a.channel_Name, b.comment_count as No_of_comments from Channels a, videos b \
+                                                                                 where a.channel_ID = b.Channel_ID order by Comment_count Desc Limit 1;", mydb)
     mydb.close()
 
     st.dataframe(query_result)
