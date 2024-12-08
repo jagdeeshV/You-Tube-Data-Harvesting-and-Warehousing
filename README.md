@@ -20,6 +20,9 @@ The project’s goal was to create a tool that could provide meaningful insights
 **Data warehousing** is the process of storing the collected data into a centralized repository, typically for analysis and reporting purposes. A data Warehouse is based on analytical processing.  Data Warehousing can be applied anywhere where we have a huge amount of data and we want to see statistical results that help in decision making. 
 
 ### Technologies used and Pre-requisites
+
+All details and installation information are provided in the Prerquisite.PDF file.
+
 1.	**Python:** The programming language used for building the application and scripting tasks.
 
     Visit the URL  [Download Python | Python.org](https://www.python.org/downloads/)    to download and install python in the PC
