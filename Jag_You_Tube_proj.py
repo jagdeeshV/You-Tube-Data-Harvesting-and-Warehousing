@@ -11,7 +11,6 @@ import time
 import os
 import psutil
 
-x = 0
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
 # Part 1 :  A. Functions for Data Extracting from You Tube data
 
@@ -321,13 +320,6 @@ def extract_insert_data_st():
 # Main Streamlit routine to accept Channel ID, extract & Store Data and 10 queries
 st.header(":red[YouTube] Data Harvesting and Warehousing")
 
-if x == 0:
-    allow_fetch = 'N'
-    db_host = "localhost"
-    db_user = "root"
-    db_password = "Sq!R00t"
-    x = 1
-
 mycursor.execute("SELECT COUNT(Channel_ID) AS channel_count FROM channels")
 channel_count = mycursor.fetchone()[0]
 mycursor.execute("SELECT COUNT(Video_ID) AS video_count FROM videos")
@@ -347,102 +339,82 @@ p.a {{
 <p class="a">{txt1}</p>
 """
 st.markdown(html_str, unsafe_allow_html=True)
-place_holder = st.empty()
 
-api_msg = 'Your API Key'
-host_msg = 'DB Host:  '
-user_msg = 'DB User: '
-pass_msg = 'DB PAssword: '
+##txt = {"Channels: ": [channel_count], "Videos: ": [video_count], "Comments: ":[comment_count]}
+##df = pd.DataFrame(data=txt)
+##st.table(df.style.background_gradient(cmap='Blues'))
 
 # YouTube Data API access
-with place_holder.container():
-    text_input_container = st.empty()
-    api_key = text_input_container.text_input(api_msg, placeholder=api_msg, help = 'To get a Key go through <https://developers.google.com/youtube/v3/getting-started>', label_visibility='collapsed')
-    db_host = st.text_input(host_msg, value="", placeholder=host_msg, label_visibility='collapsed')
-    db_user =  st.text_input(user_msg, value="", placeholder=user_msg, label_visibility='collapsed')
-    db_password =  st.text_input(pass_msg, value="", type = "password", placeholder=pass_msg, label_visibility='collapsed')
-
-    if api_key != "":
-        text_input_container.empty()
+text_input_container = st.empty()
+api_msg = 'Your API Key'
+api_key = text_input_container.text_input("API Key: ",  placeholder="API Key", help = 'To get a Key go through <https://developers.google.com/youtube/v3/getting-started>',label_visibility='collapsed')
+if api_key != "":
+    text_input_container.empty()
+    if api_key == 'X' or api_key == 'x':
+        xx = 1
+    else:
         youtube = build('youtube', 'v3',  developerKey=api_key)
         channel_data = extract_channel_data('UCuohvIDD52A0Frtre92OUQA', 'Main')
         if channel_data['channel_name']  ==  'ERR':
             st.info ('Invalid API Key.  You can work with the query options')
-            allow_fetch = 'N'
         else:
-            allow_fetch = 'Y'
-
-cred_data = st.sidebar.button("Credentials")
-str_data = st.sidebar.button("Fetch and Store Data")
-qry_data = st.sidebar.button("Analyse DAta")
-exit_app = st.sidebar.button("Shut Down")
-
-if str_data:
-    if not api_key or not db_host or not db_user or not db_password:
-        if allow_fetch == 'Y':
-            with place_holder:
-                channel_id = st.text_input("Enter YouTube Channel ID:")
+            channel_id = st.text_input("Enter YouTube Channel ID:")
             extract_insert_data_st()
-        else:
-            with place_holder:
-                st.info('#### 0. Credentials not entered')
-    else:
-        with place_holder:
-            st.info('#### 1. Credentials not entered')
+else:
+    st.info('Enter a API key. or X to work with queries in existing data')
 
 # Part 3 : Creating a streamlit application with the query of the questions given for the data stored in the local database
-if qry_data:
-    with place_holder:
-        query_options = [
-            " 1. Names of all the videos and their corresponding channels?",
-            " 2. Channel having the most number of videos & its count",
-            " 3. Top 10 most viewed videos and their channel Name",
-            " 4. All comments and their video names",
-            " 5. Video with highest number of likes and its channel name",
-            " 6. No. of likes and dislikes of each Video with its name",
-            " 7. No. of views for each channel with its name",
-            " 8. List of Channels that have published videos in the year 2022",
-            " 9. Average duration of all videos in each channel with their name",
-            "10. Vidoe with highest No. of comments, and its channel name"
-            ]
-        selected_query = st.selectbox("Select a query for result", query_options)
+query_options = [
+    " 1. Names of all the videos and their corresponding channels?",
+    " 2. Channel having the most number of videos & its count",
+    " 3. Top 10 most viewed videos and their channel Name",
+    " 4. All comments and their video names",
+    " 5. Video with highest number of likes and its channel name",
+    " 6. No. of likes and dislikes of each Video with its name",
+    " 7. No. of views for each channel with its name",
+    " 8. List of Channels that have published videos in the year 2022",
+    " 9. Average duration of all videos in each channel with their name",
+    "10. Vidoe with highest No. of comments, and its channel name"
+    ]
+selected_query = st.selectbox("Select a query for result", query_options)
 
-    if st.button("Execute"):
-        mydb = mysql.connector.connect(host = "localhost", user = "root", password = "Sq!R00t", database = "youtube_DB")
-        if selected_query == query_options[0]:
-            query_result = pd.read_sql_query("select Video_Name, Channel_Name from channels a, videos b where a.channel_id = b.channel_id order by Video_Name", mydb)
-        elif selected_query == query_options[1]:
-            query_result = pd.read_sql_query("select channel_Name, count(video_id) as No_of_Videos from channels a, videos b \
-                                                                                 where a.channel_id = b.channel_id group by channel_Name order by count(video_id) desc limit 1", mydb)
-        elif selected_query == query_options[2]:
-            query_result =pd.read_sql_query("select  Video_Name, View_count as Views, Channel_Name from channels a, videos b \
-                                                                                 where a.channel_id = b.channel_id order by view_count desc limit 10;", mydb)
-        elif selected_query == query_options[3]:
-            query_result = pd.read_sql_query("Select Video_Name, COUNT(Comment_ID) as No_of_Comments from videos b, comments c \
-                                                                                 where b.Video_ID = c.Video_ID group by Video_Name order by Video_name;", mydb)
-        elif selected_query == query_options[4]:
-            query_result = pd.read_sql_query("Select Video_Name, channel_Name, like_count as No_of_Likes from channels a, videos b \
-                                                                                 where b.channel_ID = a.channel_ID order by like_count Desc Limit 1;", mydb)
-        elif selected_query == query_options[5]:
-            query_result = pd.read_sql_query("Select Video_Name, Sum(like_count) as Total_Likes, Sum(Dislike_count) as Total_Dislikes from  videos \
-                                                                                 group by Video_Name order by video_name;", mydb)
-        elif selected_query == query_options[6]:
-            query_result = pd.read_sql_query("Select channel_Name, Sum(View_Count) as Total_Views From channels a, videos b \
-                                                                                 where a.channel_ID = b.channel_ID group by channel_Name order by channel_Name;", mydb)
-        elif selected_query == query_options[7]:
-            query_result = pd.read_sql_query("Select channel_Name, count(b.channel_ID) as No_of_Videos From channels a, Videos b \
-                                                                                 Where a.channel_ID = b.channel_ID and Year(b.Published_Date) = '2022' Group by channel_Name;", mydb)
-        elif selected_query == query_options[8]:
-            query_result = pd.read_sql_query("Select channel_Name, Round(Avg(Duration), 2) as Average_Duration From channels a, Videos b \
-                                                                                    where b.channel_ID = a.channel_ID Group by channel_Name;", mydb)
-        elif selected_query == query_options[9]:
-            query_result = pd.read_sql_query("Select b.Video_Name, a.channel_Name, b.comment_count as No_of_comments from Channels a, videos b \
-                                                                                     where a.channel_ID = b.Channel_ID order by Comment_count Desc Limit 1;", mydb)
-        mydb.close()
+if st.button("Execute"):
+    mydb = mysql.connector.connect(host = "localhost", user = "root", password = "Sq!R00t", database = "youtube_DB")
+    if selected_query == query_options[0]:
+        query_result = pd.read_sql_query("select Video_Name, Channel_Name from channels a, videos b where a.channel_id = b.channel_id order by Video_Name", mydb)
+    elif selected_query == query_options[1]:
+        query_result = pd.read_sql_query("select channel_Name, count(video_id) as No_of_Videos from channels a, videos b \
+                                                                             where a.channel_id = b.channel_id group by channel_Name order by count(video_id) desc limit 1", mydb)
+    elif selected_query == query_options[2]:
+        query_result =pd.read_sql_query("select  Video_Name, View_count as Views, Channel_Name from channels a, videos b \
+                                                                             where a.channel_id = b.channel_id order by view_count desc limit 10;", mydb)
+    elif selected_query == query_options[3]:
+        query_result = pd.read_sql_query("Select Video_Name, COUNT(Comment_ID) as No_of_Comments from videos b, comments c \
+                                                                             where b.Video_ID = c.Video_ID group by Video_Name order by Video_name;", mydb)
+    elif selected_query == query_options[4]:
+        query_result = pd.read_sql_query("Select Video_Name, channel_Name, like_count as No_of_Likes from channels a, videos b \
+                                                                             where b.channel_ID = a.channel_ID order by like_count Desc Limit 1;", mydb)
+    elif selected_query == query_options[5]:
+        query_result = pd.read_sql_query("Select Video_Name, Sum(like_count) as Total_Likes, Sum(Dislike_count) as Total_Dislikes from  videos \
+                                                                             group by Video_Name order by video_name;", mydb)
+    elif selected_query == query_options[6]:
+        query_result = pd.read_sql_query("Select channel_Name, Sum(View_Count) as Total_Views From channels a, videos b \
+                                                                             where a.channel_ID = b.channel_ID group by channel_Name order by channel_Name;", mydb)
+    elif selected_query == query_options[7]:
+        query_result = pd.read_sql_query("Select channel_Name, count(b.channel_ID) as No_of_Videos From channels a, Videos b \
+                                                                             Where a.channel_ID = b.channel_ID and Year(b.Published_Date) = '2022' Group by channel_Name;", mydb)
+    elif selected_query == query_options[8]:
+        query_result = pd.read_sql_query("Select channel_Name, Round(Avg(Duration), 2) as Average_Duration From channels a, Videos b \
+                                                                                where b.channel_ID = a.channel_ID Group by channel_Name;", mydb)
+    elif selected_query == query_options[9]:
+        query_result = pd.read_sql_query("Select b.Video_Name, a.channel_Name, b.comment_count as No_of_comments from Channels a, videos b \
+                                                                                 where a.channel_ID = b.Channel_ID order by Comment_count Desc Limit 1;", mydb)
+    mydb.close()
 
-        st.dataframe(query_result)
+    st.dataframe(query_result)
 
-if exit_app:
+#exit_app = st.sidebar.button("Shut Down")
+if st.button ('Exit App'):
     st.markdown ("### Thank You for using the App")
     time.sleep(3)
     # Close streamlit browser tab
